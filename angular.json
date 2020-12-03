@@ -127,5 +127,8 @@
       }
     }
   },
-  "defaultProject": "test-shpgi-app"
+  "defaultProject": "test-shpgi-app",
+  "cli": {
+    "analytics": "6a3aaaac-49ec-4789-b89f-bdb7d881544a"
+  }
 }

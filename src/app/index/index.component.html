@@ -1,0 +1,19 @@
+<div id="shogi-board"> 
+  <div *ngFor="let row of game.board.positions" class="row">
+    <div *ngFor="let column of row" class="square" (click)="offSelect()"></div>
+  </div>
+  <ng-container *ngIf="game.board.selectedPiece !== null">
+    <div *ngFor="let area of game.board.selectedPiece?.canMoveAllPosition; let i = index"
+      class="choose-area" (click)="chooseSelect(area)" 
+      [style.left.px]="game.board.selectedPiece?.chooseX(i)" [style.top.px]="game.board.selectedPiece?.chooseY(i)"></div>
+  </ng-container>
+  <div *ngFor="let piece of game.board.pieces" (click)="onSelect(piece)" class="pieces"
+    [style.left.px]="piece.currentX()" [style.top.px]="piece.currentY()" [class.shadow]="onShadow(piece)">
+      <p [class.reverse-print]="piece.player.isFirstMove !== true" [class.promotion]="piece.promotion" > {{ piece.printPiece() }} </p>
+  </div>
+  <div class="player player1"></div>
+  <div class="player player2"></div>
+  <ng-container *ngIf="game.isGameOver">
+    <div class="game-over"><p class="winner"> win: {{game.winner}} </p></div>
+  </ng-container>
+</div>

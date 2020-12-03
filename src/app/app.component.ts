@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+// import { Game } from '../app/models/game.model'
 
 @Component({
   selector: 'app-root',
@@ -6,5 +7,6 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  title = 'test-shpgi-app';
+  title = '将棋ゲーム';
 }
+
