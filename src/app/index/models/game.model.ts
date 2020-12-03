@@ -8,7 +8,6 @@ export class Game {
 
   isGameOver = false
   isPlayer1Turn = true
-  // turnCount = 1
   isInitialized = false
 
   constructor () {
@@ -25,8 +24,4 @@ export class Game {
     this.board.initBoard()
     this.isInitialized = true
   }
-
-  // public gameInPlay(): boolean {
-  //   return !this.isGameOver
-  // }
 }
