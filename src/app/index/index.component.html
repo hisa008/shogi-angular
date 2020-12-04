@@ -11,6 +11,12 @@
     [style.left.px]="piece.currentX()" [style.top.px]="piece.currentY()" [class.shadow]="onShadow(piece)">
       <p [class.reverse-print]="piece.player.isFirstMove !== true" [class.promotion]="piece.promotion" > {{ piece.printPiece() }} </p>
   </div>
+  <ng-container *ngIf="game.board.selectedPiece !== null">
+    <div *ngFor="let area of game.board.selectedPiece?.canMoveAllPosition; let i = index"
+      class="choose-area top-choose-area" (click)="chooseSelect(area)" 
+      [style.left.px]="game.board.selectedPiece?.chooseX(i)" [style.top.px]="game.board.selectedPiece?.chooseY(i)"></div>
+  </ng-container>
+
   <div class="player player1"></div>
   <div class="player player2"></div>
   <ng-container *ngIf="game.isGameOver">

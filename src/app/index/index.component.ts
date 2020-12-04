@@ -19,6 +19,7 @@ export class IndexComponent implements OnInit {
   }
 
   onSelect(selectPiece: BasePieceClass): void {
+
     if ((selectPiece.currentPosition) && (selectPiece.player.isFirstMove === this.game.isPlayer1Turn)) 
       selectPiece.movableTo(selectPiece.currentPosition)
   }
@@ -32,7 +33,7 @@ export class IndexComponent implements OnInit {
   }
 
   onShadow(selectPiece: BasePieceClass): boolean {
-    if (selectPiece.board.selectedPiece) return true
+    if (selectPiece.checkSelectPiece(selectPiece)) return true
     return false
   }
 }

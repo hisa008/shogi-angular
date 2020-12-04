@@ -9,6 +9,7 @@ export class BasePieceClass {
   board: Board
   promotion: boolean
   canMoveAllPosition: number[][]
+  active: boolean
   
   constructor (player: Player, currentPosition: number[], board: Board) {
     this.player = player
@@ -17,6 +18,7 @@ export class BasePieceClass {
     this.board.positions[currentPosition[0]][currentPosition[1]] = this
     this.promotion = false
     this.canMoveAllPosition = []
+    this.active = true
   }
 
   private opponentPlayer (): Player {
@@ -72,6 +74,11 @@ export class BasePieceClass {
 
   public chooseX(index: number): number {
     return 71 * this.canMoveAllPosition[index][1]
+  }
+
+  public checkSelectPiece(piece: BasePieceClass): boolean {
+    if (piece.currentPosition === this.board.selectedPiece?.currentPosition) return true
+    return false
   }
 
   moveTo(position: number[]): void {
