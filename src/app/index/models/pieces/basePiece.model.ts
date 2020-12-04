@@ -1,6 +1,6 @@
 import {Player} from '../player.model'
 import {Board} from '../board.model'
-import { threadId } from 'worker_threads';
+// import { threadId } from 'worker_threads';
 // import { TestBed } from '@angular/core/testing';
 
 export class BasePieceClass {
