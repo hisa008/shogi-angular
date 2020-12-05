@@ -5,6 +5,7 @@ export class Game {
   board: Board
   winner: null | 'Player1' | 'Player2' = null
   gameChecker: number | undefined
+  whichTurn: 'Player1' | 'Player2' = 'Player1'
 
   isGameOver = false
   isPlayer1Turn = true

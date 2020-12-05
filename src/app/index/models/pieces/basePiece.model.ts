@@ -5,7 +5,7 @@ import {Board} from '../board.model'
 
 export class BasePieceClass {
   player: Player;
-  currentPosition: number[] | null;
+  currentPosition: number[];
   board: Board
   promotion: boolean
   canMoveAllPosition: number[][]
@@ -37,10 +37,10 @@ export class BasePieceClass {
     if (this.board.player1 === undefined) return null
     if (this.board.player2 === undefined) return null
 
-    let king1 = this.board.pieces[4].currentPosition
-    let king2 = this.board.pieces[35].currentPosition
-    if (king2 && king2[0] === 7 && king2[1] === 10.8) return this.board.player1
-    if (king1 && king1[0] === 1 && king1[1] === 10.8) return this.board.player2
+    let king1 = this.board.pieces[4]
+    let king2 = this.board.pieces[35]
+    if (king2.active === false) return this.board.player1
+    if (king1.active === false) return this.board.player2
     return null
   }
 
@@ -51,23 +51,37 @@ export class BasePieceClass {
   }
 
   public currentX(): number {
-    if (this.currentPosition)
+    if (this.currentPosition) 
       return 15 + 71 * (this.currentPosition[1])
-    else
+    else 
       return 0
-  } 
+  }
+
   public currentY(): number {
-    if (this.currentPosition)
+    if (this.currentPosition) 
       return 15 + 71 * (this.currentPosition[0])
-    else
+    else 
       return 0
+  }
+
+  public inActive(): number[] {
+    if (this.player.isFirstMove) {
+      let inActivePosition1 = [6.3, 10 + .3 * this.board.inActivePlayer1.length]
+      console.log('player1' + this.board.inActivePlayer1.length)
+      if (this.board.inActivePlayer1.length > 6) inActivePosition1[0] + .8
+      return inActivePosition1
+    } else {
+      console.log('player2' + this.board.inActivePlayer1.length)
+      let inActivePosition2 = [1.8, 10 + .3 * this.board.inActivePlayer2.length]
+      if (this.board.inActivePlayer2.length > 6) inActivePosition2[0] + .8
+      return inActivePosition2
+    }
   }
 
   public canMoveArea(position: number[]): number[] {
     return [71 * (position[0]), 71 * (position[1])]
   }
 
-  
   public chooseY(index: number): number {
     return 71 * this.canMoveAllPosition[index][0]
   }
@@ -85,7 +99,7 @@ export class BasePieceClass {
     if (this.currentPosition) { // set null to my current location (元々いた場所をnullにする)
       const currentY = this.currentPosition[0]
       const currentX = this.currentPosition[1]
-      this.board.positions[currentY][currentX] = null   
+      this.board.positions[currentY][currentX] = null
     } 
 
     const nextY = position[0]
@@ -94,7 +108,10 @@ export class BasePieceClass {
     if (this.board.positions[nextY][nextX]) {   // remove the enemy piece if killed (相手のコマを奪った場合、そのコマをinActiveにする)
       const targetPiece = this.board.positions[nextY][nextX] as BasePieceClass
       targetPiece.player = this.opponentPlayer()
-      targetPiece.currentPosition = this.player.isFirstMove ? [7, 10.8] : [1, 10.8]
+      targetPiece.active = false
+      targetPiece.currentPosition = this.inActive()
+      if (this.player.isFirstMove) this.board.inActivePlayer1.push(this)
+      else　this.board.inActivePlayer2.push(this)
     }
 
     this.board.positions[position[0]][position[1]] = this   // set new location of the board and the piece (新しく配置したpositionにpieceの情報を与える)
@@ -110,6 +127,8 @@ export class BasePieceClass {
 
     this.board.selectedPiece = null
     this.board.game.isPlayer1Turn = !this.board.game.isPlayer1Turn
+    if (this.board.game.isPlayer1Turn) this.board.game.whichTurn = 'Player1'
+    else this.board.game.whichTurn = 'Player2'
   }
 
   movableTo(currentPosition: number[]): void {   // can I move to the new position? (指定のpositionに移動できるか？)

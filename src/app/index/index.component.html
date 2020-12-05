@@ -1,3 +1,4 @@
+<h3 class="turn-name">Turn : <span class="turn-player1" [class.turn-player2]="game.isPlayer1Turn">{{this.game.whichTurn}}</span></h3>
 <div id="shogi-board"> 
   <div *ngFor="let row of game.board.positions" class="row">
     <div *ngFor="let column of row" class="square" (click)="offSelect()"></div>
@@ -7,9 +8,9 @@
       class="choose-area" (click)="chooseSelect(area)" 
       [style.left.px]="game.board.selectedPiece?.chooseX(i)" [style.top.px]="game.board.selectedPiece?.chooseY(i)"></div>
   </ng-container>
-  <div *ngFor="let piece of game.board.pieces" (click)="onSelect(piece)" class="pieces"
-    [style.left.px]="piece.currentX()" [style.top.px]="piece.currentY()" [class.shadow]="onShadow(piece)">
-      <p [class.reverse-print]="piece.player.isFirstMove !== true" [class.promotion]="piece.promotion" > {{ piece.printPiece() }} </p>
+  <div *ngFor="let piece of game.board.pieces" (click)="onSelect(piece)" [style.left.px]="piece.currentX()" [style.top.px]="piece.currentY()"
+   class="pieces" [class.shadow]="onShadow(piece)" [class.positive-direction]="piece.player.isFirstMove === true" [class.reverse-direction]="piece.player.isFirstMove !== true">
+      <p [class.reverse-print]="piece.player.isFirstMove !== true" [class.promotion]="piece.promotion"> {{ piece.printPiece() }} </p>
   </div>
   <ng-container *ngIf="game.board.selectedPiece !== null">
     <div *ngFor="let area of game.board.selectedPiece?.canMoveAllPosition; let i = index"
