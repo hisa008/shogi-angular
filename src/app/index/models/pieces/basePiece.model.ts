@@ -59,23 +59,37 @@ export class BasePieceClass {
 
   public currentY(): number {
     if (this.currentPosition) 
-      return 15 + 71 * (this.currentPosition[0])
+      return 12 + 72 * (this.currentPosition[0])
     else 
       return 0
   }
 
+  // public inActive(): number[] {
+  //   if (this.player.isFirstMove) {
+  //     let inActivePosition1 = [6.3, 10 + .3 * this.board.inActivePlayer1.length]
+  //     console.log('player1' + this.board.inActivePlayer1.length)
+  //     if (this.board.inActivePlayer1.length > 6) inActivePosition1[0] + .8
+  //     return inActivePosition1
+  //   } else {
+  //     console.log('player2' + this.board.inActivePlayer1.length)
+  //     let inActivePosition2 = [1.8, 10 + .3 * this.board.inActivePlayer2.length]
+  //     if (this.board.inActivePlayer2.length > 6) inActivePosition2[0] + .8
+  //     return inActivePosition2
+  //   }
+  // }
   public inActive(): number[] {
-    if (this.player.isFirstMove) {
-      let inActivePosition1 = [6.3, 10 + .3 * this.board.inActivePlayer1.length]
-      console.log('player1' + this.board.inActivePlayer1.length)
-      if (this.board.inActivePlayer1.length > 6) inActivePosition1[0] + .8
-      return inActivePosition1
-    } else {
-      console.log('player2' + this.board.inActivePlayer1.length)
-      let inActivePosition2 = [1.8, 10 + .3 * this.board.inActivePlayer2.length]
-      if (this.board.inActivePlayer2.length > 6) inActivePosition2[0] + .8
-      return inActivePosition2
-    }
+    let positionX = this.board.inActivePlayer1.length % 7
+    let inActivePosition1 = [6.1, 10 + .3 * positionX]
+    if (this.board.inActivePlayer1.length > 13) inActivePosition1[0] += 1.8 //inActive1 piece > 12piece
+    else if (this.board.inActivePlayer1.length > 6) inActivePosition1[0] += 0.9 //inActive1 piece > 5piece
+    return inActivePosition1
+  }
+  public inActivePlayer2(): number[] {
+    let positionX = this.board.inActivePlayer2.length % 7
+    let inActivePosition2 = [1.9, 10 + .3 * positionX]
+    if (this.board.inActivePlayer2.length > 13) inActivePosition2[0] -= 1.8 //inActive1 piece > 12piece
+    else if (this.board.inActivePlayer2.length > 6) inActivePosition2[0] -= 0.9 //inActive1 piece > 5piece
+    return inActivePosition2
   }
 
   public canMoveArea(position: number[]): number[] {
@@ -109,7 +123,8 @@ export class BasePieceClass {
       const targetPiece = this.board.positions[nextY][nextX] as BasePieceClass
       targetPiece.player = this.opponentPlayer()
       targetPiece.active = false
-      targetPiece.currentPosition = this.inActive()
+      targetPiece.currentPosition = this.player.isFirstMove ? this.inActive() : this.inActivePlayer2()
+      if (targetPiece.promotion) targetPiece.promotion = false
       if (this.player.isFirstMove) this.board.inActivePlayer1.push(this)
       else　this.board.inActivePlayer2.push(this)
     }
