@@ -12,7 +12,7 @@ export class Game {
   isInitialized = false
 
   constructor () {
-    this.board = new Board(this)     
+    this.board = new Board(this)  
   }
 
   public initGame () {

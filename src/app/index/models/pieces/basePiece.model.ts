@@ -1,5 +1,6 @@
 import {Player} from '../player.model'
 import {Board} from '../board.model'
+import { threadId } from 'worker_threads';
 // import { threadId } from 'worker_threads';
 // import { TestBed } from '@angular/core/testing';
 
@@ -10,6 +11,7 @@ export class BasePieceClass {
   promotion: boolean
   canMoveAllPosition: number[][]
   active: boolean
+  moveDirection: number[][] | null
   
   constructor (player: Player, currentPosition: number[], board: Board) {
     this.player = player
@@ -19,6 +21,7 @@ export class BasePieceClass {
     this.promotion = false
     this.canMoveAllPosition = []
     this.active = true
+    this.moveDirection = null
   }
 
   private opponentPlayer (): Player {
@@ -50,6 +53,16 @@ export class BasePieceClass {
     return true
   }
 
+  private enemyPieceKilled(nextY: number, nextX: number): void {
+    const targetPiece = this.board.positions[nextY][nextX] as BasePieceClass
+    targetPiece.player = this.opponentPlayer()
+    targetPiece.active = false
+    targetPiece.currentPosition = this.player.isFirstMove ? this.inActive() : this.inActivePlayer2()
+    if (targetPiece.promotion) targetPiece.promotion = false
+    if (this.player.isFirstMove) this.board.inActivePlayer1.push(this)
+    else　this.board.inActivePlayer2.push(this)
+  }
+
   public currentX(): number {
     if (this.currentPosition) 
       return 15 + 71 * (this.currentPosition[1])
@@ -64,19 +77,6 @@ export class BasePieceClass {
       return 0
   }
 
-  // public inActive(): number[] {
-  //   if (this.player.isFirstMove) {
-  //     let inActivePosition1 = [6.3, 10 + .3 * this.board.inActivePlayer1.length]
-  //     console.log('player1' + this.board.inActivePlayer1.length)
-  //     if (this.board.inActivePlayer1.length > 6) inActivePosition1[0] + .8
-  //     return inActivePosition1
-  //   } else {
-  //     console.log('player2' + this.board.inActivePlayer1.length)
-  //     let inActivePosition2 = [1.8, 10 + .3 * this.board.inActivePlayer2.length]
-  //     if (this.board.inActivePlayer2.length > 6) inActivePosition2[0] + .8
-  //     return inActivePosition2
-  //   }
-  // }
   public inActive(): number[] {
     let positionX = this.board.inActivePlayer1.length % 7
     let inActivePosition1 = [6.1, 10 + .3 * positionX]
@@ -109,8 +109,8 @@ export class BasePieceClass {
     return false
   }
 
-  moveTo(position: number[]): void {
-    if (this.currentPosition) { // set null to my current location (元々いた場所をnullにする)
+  public moveTo(position: number[]): void {
+    if (this.currentPosition && this.active) { // set null to my current location (元々いた場所をnullにする)
       const currentY = this.currentPosition[0]
       const currentX = this.currentPosition[1]
       this.board.positions[currentY][currentX] = null
@@ -118,21 +118,11 @@ export class BasePieceClass {
 
     const nextY = position[0]
     const nextX = position[1]
+    // remove the enemy piece if killed (相手のコマを奪った場合、そのコマをinActiveにする)
+    if (this.board.positions[nextY][nextX]) this.enemyPieceKilled(nextY, nextX)
 
-    if (this.board.positions[nextY][nextX]) {   // remove the enemy piece if killed (相手のコマを奪った場合、そのコマをinActiveにする)
-      const targetPiece = this.board.positions[nextY][nextX] as BasePieceClass
-      targetPiece.player = this.opponentPlayer()
-      targetPiece.active = false
-      targetPiece.currentPosition = this.player.isFirstMove ? this.inActive() : this.inActivePlayer2()
-      if (targetPiece.promotion) targetPiece.promotion = false
-      if (this.player.isFirstMove) this.board.inActivePlayer1.push(this)
-      else　this.board.inActivePlayer2.push(this)
-    }
-
-    this.board.positions[position[0]][position[1]] = this   // set new location of the board and the piece (新しく配置したpositionにpieceの情報を与える)
+    this.board.positions[nextY][nextX] = this   // set new location of the board and the piece (新しく配置したpositionにpieceの情報を与える)
     this.currentPosition = position
-
-    if(this.canPromote()) this.promotion = true
     
     const winner = this.checkWinner() // game over?
     if (winner) {
@@ -140,27 +130,40 @@ export class BasePieceClass {
       this.board.game.winner = winner.isFirstMove ? 'Player1' : 'Player2'
     }
 
+    if (this.canPromote()) this.promotion = true
     this.board.selectedPiece = null
     this.board.game.isPlayer1Turn = !this.board.game.isPlayer1Turn
+    if (!this.active) this.active = true
     if (this.board.game.isPlayer1Turn) this.board.game.whichTurn = 'Player1'
     else this.board.game.whichTurn = 'Player2'
   }
 
-  movableTo(currentPosition: number[]): void {   // can I move to the new position? (指定のpositionに移動できるか？)
+  public movableTo(currentPosition: number[]): void {   // can I move to the new position? (指定のpositionに移動できるか？)
     this.canMoveAllPosition = []
     this.board.selectedPiece = this
-    if (this.constructor.name === "Hisya") this.isMoveBetween(currentPosition, [[-1, 0],[0, 1],[1, 0],[0, -1]])
-    else if (this.constructor.name === "Kaku") this.isMoveBetween(currentPosition, [[-1, 1],[-1, -1],[1, 1],[1, -1]])
+    if (this.moveDirection) this.isMoveBetween(currentPosition, this.moveDirection)
     else if (this.constructor.name === "Kyosya" && this.promotion === false) this.isMoveBetween(currentPosition, this.player.isFirstMove ? [[-1, 0]] : [[1, 0]])
     else this.isOtherPiece(currentPosition)
+    if(this.active === false) this.inActiveMovableTo()
   }
 
-  isOtherPiece(currentPosition: number[]): void {
+  public inActiveMovableTo(): void {
+    let rowNumber = 0
+    for (let row of this.board.positions) {
+      let columnNumber = 0
+      for (let column of row) {
+        if (column === null) this.canMoveAllPosition.push([rowNumber, columnNumber])
+        columnNumber++
+      }
+      rowNumber++
+    }
+  }
+
+  public isOtherPiece(currentPosition: number[]): void {
     const currentY = currentPosition[0]
     const currentX = currentPosition[1]
 
-    let position = this.canMoveToWithoutObstical()
-     
+    let position = this.canMoveToWithoutObstical()     
     for (let i = 0;  i < position.length; i++) {
       let canMoveOnBoard: number[]
       if (this.player.isFirstMove)
@@ -172,7 +175,7 @@ export class BasePieceClass {
     }
   }
 
-  isPromotionMoveCheck(nextAreas: number[][], currentArea: number[]): void {
+  public isPromotionMoveCheck(nextAreas: number[][], currentArea: number[]): void {
     nextAreas.forEach(nextArea => {
       let nextPosition = [nextArea[0] + currentArea[0], nextArea[1] + currentArea[1]]
       if ((this.isOnBoard(nextPosition[0], nextPosition[1]))
@@ -181,13 +184,13 @@ export class BasePieceClass {
     })
   }
   
-  isMoveSquare(nextY: number, nextX: number): boolean {
+  public isMoveSquare(nextY: number, nextX: number): boolean {
   const piece = this.board.positions[nextY][nextX]
     if (piece && piece.player.isFirstMove === this.player.isFirstMove) return false
     return true
   }
 
-  isMoveBetween(currentPosition: number[], directions: number[][]): void {
+  public isMoveBetween(currentPosition: number[], directions: number[][]): void {
     directions.forEach(direction => {
       let checkPosition = [currentPosition[0], currentPosition[1]]
       while (true) {
@@ -195,7 +198,6 @@ export class BasePieceClass {
         if(!this.isOnBoard(checkPosition[0], checkPosition[1])) break
         let nextCheckArea = this.board.positions[checkPosition[0]][checkPosition[1]]
         if (nextCheckArea) { // piece exists
-
           if(nextCheckArea.player.isFirstMove === this.player.isFirstMove) {
             break 
           } else { 
@@ -207,15 +209,12 @@ export class BasePieceClass {
         }
       }
     })
-    if (this.promotion && this.constructor.name === "Hisya")
-      this.isPromotionMoveCheck([[-1, 1],[-1, -1],[1, 1],[1, -1]], currentPosition)
-    if (this.promotion && this.constructor.name === "Kaku")
-      this.isPromotionMoveCheck([[-1, 0],[0, 1],[1, 0],[0, -1]], currentPosition)
+    if (this.promotion) this.isPromotionMoveCheck(this.canMoveToWithoutObstical(), currentPosition)
   }
 
-  printPiece (): string {
+  public printPiece (): string {
     return ''
   }
 
-  canMoveToWithoutObstical (): number[][] { return [] }
+  public canMoveToWithoutObstical (): number[][] { return [] }
 }

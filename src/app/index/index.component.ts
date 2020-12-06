@@ -19,7 +19,6 @@ export class IndexComponent implements OnInit {
   }
 
   onSelect(selectPiece: BasePieceClass): void {
-
     if ((selectPiece.currentPosition) && (selectPiece.player.isFirstMove === this.game.isPlayer1Turn)) 
       selectPiece.movableTo(selectPiece.currentPosition)
   }
