@@ -1,6 +1,26 @@
 import {BasePieceClass} from './basePiece.model'
 
 export class Keima extends BasePieceClass {
+  public printPiece () {
+    if (this.promotion)
+      return '圭'
+    else
+      return '桂'
+  }
+
+  public inActiveMovableTo(): void {
+    let rowNumber = 0
+    for (let row of this.board.positions) {
+      let columnNumber = 0
+      for (let column of row) {
+        if (this.checkForbiddenArea(rowNumber) && column === null)
+          this.canMoveAllPosition.push([rowNumber, columnNumber])
+        columnNumber++
+      }
+      rowNumber++
+    }
+  }
+
   public checkForbiddenArea(row: number) :boolean {
     let forbiddenArea = this.player.isFirstMove ? 0 : 8
     let exceptionArea: number | undefined = undefined
@@ -9,13 +29,6 @@ export class Keima extends BasePieceClass {
     if (row === forbiddenArea) return false
     if (row === exceptionArea) return false
     return true
-  }
-
-  public printPiece () {
-    if (this.promotion)
-      return '圭'
-    else
-      return '桂'
   }
 
   public canMoveToWithoutObstical () {

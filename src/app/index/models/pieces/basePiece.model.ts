@@ -28,19 +28,21 @@ export class BasePieceClass {
     return this.board.player2 as Player
   }
 
-  private canPromoteBefore(): void {
+  private movedCanPromote(): void {
     if (window.confirm('成りますか？')) this.promotion = true
   }
 
-  private checkWinner (): Player | null {
-    if (this.board.player1 === undefined) return null
-    if (this.board.player2 === undefined) return null
-
+  private checkWinner (): void{
+    let winner: Player | undefined
     let king1 = this.board.pieces[4]
     let king2 = this.board.pieces[35]
-    if (king2.active === false) return this.board.player1
-    if (king1.active === false) return this.board.player2
-    return null
+
+    if (king2.active === false) winner = this.board.player1
+    if (king1.active === false) winner = this.board.player2
+    if (winner) {
+      this.board.game.isGameOver = true
+      this.board.game.winner = winner.isFirstMove ? 'Player1' : 'Player2'
+    } 
   }
 
   private isOnBoard(nextY: number, nextX: number): boolean {
@@ -49,18 +51,14 @@ export class BasePieceClass {
     return true
   }
 
-  private inActivePositionPlayer1(): number[] {
-    let positionX = this.board.inActivePlayer1.length
-    let inActivePosition = [6.1, 10 + .3 * (positionX % 7)]
-    if (positionX > 13) inActivePosition[0] += 1.8 //inActive1 piece > 12piece
-    else if (positionX > 6) inActivePosition[0] += 0.9 //inActive1 piece > 5piece
-    return inActivePosition
-  }
-  private inActivePositionPlayer2(): number[] {
-    let positionX = this.board.inActivePlayer2.length
-    let inActivePosition = [1.9, 10 + .3 * (positionX % 7)]
-    if (positionX > 13) inActivePosition[0] -= 1.8 //inActive2 piece > 12piece
-    else if (positionX > 6) inActivePosition[0] -= 0.9 //inActive2 piece > 5piece
+  private inActivePositions(): number[] {
+    let player = this.player.isFirstMove
+    let positionX = player ? this.board.inActivePlayer1.length : this.board.inActivePlayer2.length
+    let inActivePosition = player ? [6.1, 10 + .3 * (positionX % 7)] : [1.9, 10 + .3 * (positionX % 7)]
+    if (positionX > 13) 
+      player ? inActivePosition[0] += 1.8 : inActivePosition[0] -= 1.8
+    else if (positionX > 6) 
+      player ? inActivePosition[0] += 0.9 : inActivePosition[0] -= 0.9
     return inActivePosition
   }
 
@@ -68,23 +66,39 @@ export class BasePieceClass {
     const targetPiece = this.board.positions[nextY][nextX] as BasePieceClass
     targetPiece.player = this.opponentPlayer()
     targetPiece.active = false
-    targetPiece.currentPosition = this.player.isFirstMove ? this.inActivePositionPlayer1() : this.inActivePositionPlayer2()
+    targetPiece.currentPosition = this.inActivePositions()
     if (targetPiece.promotion) targetPiece.promotion = false
     if (this.player.isFirstMove) this.board.inActivePlayer1.push(targetPiece)
     else　this.board.inActivePlayer2.push(targetPiece)
   }
 
+  private isMoveSquare(nextY: number, nextX: number): boolean {
+    const piece = this.board.positions[nextY][nextX]
+    if (piece && piece.player.isFirstMove === this.player.isFirstMove) return false
+    return true
+  }
+
+  private inActivePieceMovedPlayer(inActivePieceLength: number): void {
+    const player = this.player.isFirstMove
+    let positionX = inActivePieceLength % 7
+    let inActivePosition = player ? [6.1, 10 + .3 * positionX] : [1.9, 10 + .3 * positionX]
+    if (inActivePieceLength > 13)
+      player ? inActivePosition[0] += 1.8 : inActivePosition[0] -= 1.8 
+    else if (inActivePieceLength > 6)
+      player ? inActivePosition[0] += 0.9 : inActivePosition[0] -= 0.9
+    this.currentPosition = inActivePosition
+  }
+
   public canPromoteSelect(currentY: number): void {
     if (this.player.isFirstMove && !this.promotion && currentY < 3)
-      this.canPromoteBefore()
+      this.movedCanPromote()
     else if ((!this.player.isFirstMove) && !this.promotion && currentY > 5)
-      this.canPromoteBefore()
-    else if (this.active && this.canPromote())
+      this.movedCanPromote()
+    else if (this.active && !this.promotion && this.canPromote())
       this.promotion = true
   }
 
   public canPromote(): boolean {
-    if (this.promotion) return false
     if (this.player.isFirstMove && this.currentPosition[0] < 3) {
       if (window.confirm('成りますか？')) return true
     } else if (!this.player.isFirstMove && this.currentPosition[0] > 5) {
@@ -96,15 +110,13 @@ export class BasePieceClass {
   public currentX(): number {
     if (this.currentPosition) 
       return 15 + 71 * (this.currentPosition[1])
-    else 
-      return 0
+    return 0
   }
 
   public currentY(): number {
     if (this.currentPosition) 
       return 12 + 72 * (this.currentPosition[0])
-    else 
-      return 0
+    return 0
   }
 
   public canMoveArea(position: number[]): number[] {
@@ -124,45 +136,18 @@ export class BasePieceClass {
     return false
   }
 
-  public inActivePieceMovedPlayer1(inActivePieceLength: number): void {
-    let positionX = inActivePieceLength % 7
-    let inActivePosition1 = [6.1, 10 + .3 * positionX]
-    if (inActivePieceLength > 13) inActivePosition1[0] += 1.8 //inActive1 piece > 12piece
-    else if (inActivePieceLength > 6) inActivePosition1[0] += 0.9 //inActive1 piece > 5piece
-    this.currentPosition = inActivePosition1
-  }
-  public inActivePieceMovedPlayer2(inActivePieceLength: number): void {
-    let positionX = inActivePieceLength % 7
-    let inActivePosition2 = [1.9, 10 + .3 * positionX]
-    if (inActivePieceLength > 13) inActivePosition2[0] -= 1.8 //inActive2 piece > 12piece
-    else if (inActivePieceLength > 6) inActivePosition2[0] -= 0.9 //inActive2 piece > 5piece
-    this.currentPosition = inActivePosition2
-  }
-
   public inActiveMove(): void{
     this.active = true
-    if (this.player.isFirstMove) {
-      let inActivePieces = this.board.inActivePlayer1
-      for (let index = 0; index < inActivePieces.length; index++) {
-        if (inActivePieces[index] == this) {
-          inActivePieces.splice(index, 1);
-          break;
-        }
+    let inActivePieces: BasePieceClass[]
+    inActivePieces = this.player.isFirstMove ? this.board.inActivePlayer1 : this.board.inActivePlayer2
+    for (let i = 0; i < inActivePieces.length; i++) {
+      if (inActivePieces[i] == this) {
+        inActivePieces.splice(i, 1);
+        break;
       }
-      for (let i = 0; i < inActivePieces.length; i++) {
-        inActivePieces[i].inActivePieceMovedPlayer1(i)
-      }
-    } else {
-      let inActivePieces = this.board.inActivePlayer2
-      for (let index = 0; index < inActivePieces.length; index++) {
-        if (inActivePieces[index] == this) {
-          inActivePieces.splice(index, 1);
-          break;
-        }
-      }
-      for (let index = 0; index < inActivePieces.length; index++) {
-        inActivePieces[index].inActivePieceMovedPlayer2(index)
-      }
+    }
+    for (let i = 0; i < inActivePieces.length; i++) {
+      inActivePieces[i].inActivePieceMovedPlayer(i)
     }
   }
 
@@ -179,66 +164,40 @@ export class BasePieceClass {
     const currentX = this.currentPosition[1]
     if (this.currentPosition && this.active) { // set null to my current location (元々いた場所をnullにする)
       this.board.positions[currentY][currentX] = null
-    } 
-    const nextY = position[0]
-    const nextX = position[1]
-
-    if (this.board.positions[nextY][nextX]) this.enemyPieceKilled(nextY, nextX)
-
-    this.board.positions[nextY][nextX] = this   // set new location of the board and the piece (新しく配置したpositionにpieceの情報を与える)
-    this.currentPosition = position
-    
-    const winner = this.checkWinner() // game over?
-    if (winner) {
-      this.board.game.isGameOver = true
-      this.board.game.winner = winner.isFirstMove ? 'Player1' : 'Player2'
     }
 
-    this.canPromoteSelect(currentY)
+    const nextY = position[0]
+    const nextX = position[1]
+    if (this.board.positions[nextY][nextX]) this.enemyPieceKilled(nextY, nextX)
+    this.board.positions[nextY][nextX] = this   // set new location of the board and the piece (新しく配置したpositionにpieceの情報を与える)
+    this.currentPosition = position
+
+    this.checkWinner() // game over?
+    this.canPromoteSelect(currentY) // can promote?
     this.afterMoving()
   }
 
   public movableTo(currentPosition: number[]): void {   // can I move to the new position? (指定のpositionに移動できるか？)
     this.canMoveAllPosition = []
     this.board.selectedPiece = this
-    if (this.moveDirection) this.isMoveBetween(currentPosition, this.moveDirection)
-    else this.isOtherPiece(currentPosition)
+    if (this.moveDirection) this.bigPieceMove(currentPosition, this.moveDirection)
+    else this.smallPieceMove(currentPosition)
     if(this.active === false) this.inActiveMovableTo()
   }
 
   public inActiveMovableTo(): void {
-    let exitOwnPawnColumn: number[] = []
-    if (this.constructor.name === "Hu")
-      exitOwnPawnColumn = this.checkPawnColumn() // 自身の歩が存在する場合、そのx座標を格納  
     let rowNumber = 0
     for (let row of this.board.positions) {
       let columnNumber = 0
       for (let column of row) {
-        if (this.checkForbiddenArea(rowNumber) && column === null && !exitOwnPawnColumn.includes(columnNumber))
-          this.canMoveAllPosition.push([rowNumber, columnNumber])
+        if (column === null) this.canMoveAllPosition.push([rowNumber, columnNumber])
         columnNumber++
       }
       rowNumber++
     }
   }
 
-  public checkForbiddenArea(row: number) :boolean {
-    return true
-  }
-
-  public checkPawnColumn(): number[]{  //自身の歩が存在する場合、そのx座標をownPawnColumnに格納
-    let ownPawnColumn: number[] = []
-    this.board.positions.forEach(row => {
-      row.forEach(column => {
-        if (column?.player.isFirstMove === this.player.isFirstMove && column.constructor.name === "Hu") {
-          ownPawnColumn.push(column.currentPosition[1])
-        }
-      })
-    })
-    return ownPawnColumn
-  }
-
-  public isOtherPiece(currentPosition: number[]): void {
+  public smallPieceMove(currentPosition: number[]): void {
     const currentY = currentPosition[0]
     const currentX = currentPosition[1]
 
@@ -262,14 +221,8 @@ export class BasePieceClass {
         this.canMoveAllPosition.push(nextPosition)
     })
   }
-  
-  public isMoveSquare(nextY: number, nextX: number): boolean {
-  const piece = this.board.positions[nextY][nextX]
-    if (piece && piece.player.isFirstMove === this.player.isFirstMove) return false
-    return true
-  }
 
-  public isMoveBetween(currentPosition: number[], directions: number[][]): void {
+  public bigPieceMove(currentPosition: number[], directions: number[][]): void {
     directions.forEach(direction => {
       let checkPosition = [currentPosition[0], currentPosition[1]]
       while (true) {

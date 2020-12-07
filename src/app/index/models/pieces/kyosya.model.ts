@@ -26,6 +26,19 @@ export class Kyosya extends BasePieceClass {
     return false
   }
 
+  public inActiveMovableTo(): void {
+    let rowNumber = 0
+    for (let row of this.board.positions) {
+      let columnNumber = 0
+      for (let column of row) {
+        if (this.checkForbiddenArea(rowNumber) && column === null)
+          this.canMoveAllPosition.push([rowNumber, columnNumber])
+        columnNumber++
+      }
+      rowNumber++
+    }
+  }
+
   public checkForbiddenArea(row: number) :boolean {
     let forbiddenArea = this.player.isFirstMove ? 0 : 8
     if (row === forbiddenArea) return false
@@ -49,8 +62,8 @@ export class Kyosya extends BasePieceClass {
   public movableTo(currentPosition: number[]): void {
     this.canMoveAllPosition = []
     this.board.selectedPiece = this
-    if (this.promotion === false) this.isMoveBetween(currentPosition, this.player.isFirstMove ? [[-1, 0]] : [[1, 0]])
-    else this.isOtherPiece(currentPosition)
+    if (this.promotion === false) this.bigPieceMove(currentPosition, this.player.isFirstMove ? [[-1, 0]] : [[1, 0]])
+    else this.smallPieceMove(currentPosition)
     if(this.active === false) this.inActiveMovableTo()
   }
 }
