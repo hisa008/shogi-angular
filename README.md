@@ -1,27 +1,21 @@
-# TestShpgiApp
+# 将棋ゲーム
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 11.0.2.
+このアプリ上では実際の将棋を行うことができます。
 
-## Development server
+## ルール
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+* どちらかの王将を失った時点でゲーム終了
+* 操作は交互に行う
 
-## Code scaffolding
+## 駒の移動方法
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+1. 動かしたい駒をクリック
+2. 移動可能なエリアが赤マスで表示されるので、移動したいエリア（赤マス）をクリック
 
-## Build
+## 実装機能
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
-
-## Running unit tests
-
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+* 対局の終了（どちらかの王将が失われた時点で）
+* 駒の移動
+* playerの切り替え
+* 成駒（*選択権はなし　強制的に成ります）
+* 持ち駒の使用
