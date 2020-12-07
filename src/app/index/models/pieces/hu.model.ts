@@ -8,6 +8,12 @@ export class Hu extends BasePieceClass {
       return '歩'
   }
 
+  public checkForbiddenArea(row: number) :boolean {
+    let forbiddenArea = this.player.isFirstMove ? 0 : 8
+    if (row === forbiddenArea) return false
+    return true
+  }
+
   public canMoveToWithoutObstical () {
     if (this.promotion)
       return [
