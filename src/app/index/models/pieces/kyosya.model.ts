@@ -8,6 +8,24 @@ export class Kyosya extends BasePieceClass {
       return '香'
   }
 
+  public canPromoteSelect(currentY: number): void {
+    if (this.active && this.canPromote())
+      this.promotion = true
+  }
+
+  public canPromote(): boolean {
+    if (this.promotion) return false
+    if (this.player === this.board.player1 && this.currentPosition[0] === 0)
+      return true
+    else if (this.player === this.board.player1 && this.currentPosition[0] < 3)
+      if (window.confirm('成りますか？')) return true
+    if (this.player === this.board.player2 && this.currentPosition[0] === 8)
+      return true
+    else if (this.player === this.board.player2 && this.currentPosition[0] > 5)
+      if (window.confirm('成りますか？')) return true
+    return false
+  }
+
   public checkForbiddenArea(row: number) :boolean {
     let forbiddenArea = this.player.isFirstMove ? 0 : 8
     if (row === forbiddenArea) return false

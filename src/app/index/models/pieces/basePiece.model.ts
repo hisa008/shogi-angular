@@ -28,17 +28,6 @@ export class BasePieceClass {
     return this.board.player2 as Player
   }
 
-  private canPromote(): boolean {
-    if (this.promotion) return false
-    if (this.player === this.board.player1 && this.currentPosition[0] < 3) {
-      if (window.confirm('成りますか？')) return true
-    }
-    else if (this.player === this.board.player2 && this.currentPosition[0] > 5) {
-      if (window.confirm('成りますか？')) return true
-    }
-    return false
-  }
-
   private canPromoteBefore(): void {
     if (window.confirm('成りますか？')) this.promotion = true
   }
@@ -85,13 +74,22 @@ export class BasePieceClass {
     else　this.board.inActivePlayer2.push(targetPiece)
   }
 
-  private canPromoteSelect(currentY: number): void {
+  public canPromoteSelect(currentY: number): void {
     if (this.player.isFirstMove && !this.promotion && currentY < 3)
       this.canPromoteBefore()
     else if (!this.player.isFirstMove && !this.promotion && currentY > 5)
       this.canPromoteBefore()
     else if (this.active && this.canPromote())
       this.promotion = true
+  }
+
+  public canPromote(): boolean {
+    if (this.promotion) return false
+    if (this.player === this.board.player1 && this.currentPosition[0] < 3)
+      if (window.confirm('成りますか？')) return true
+    else if (this.player === this.board.player2 && this.currentPosition[0] > 5)
+      if (window.confirm('成りますか？')) return true
+    return false
   }
 
   public currentX(): number {
