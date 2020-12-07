@@ -77,7 +77,7 @@ export class BasePieceClass {
   public canPromoteSelect(currentY: number): void {
     if (this.player.isFirstMove && !this.promotion && currentY < 3)
       this.canPromoteBefore()
-    else if (!this.player.isFirstMove && !this.promotion && currentY > 5)
+    else if ((!this.player.isFirstMove) && !this.promotion && currentY > 5)
       this.canPromoteBefore()
     else if (this.active && this.canPromote())
       this.promotion = true
@@ -85,10 +85,11 @@ export class BasePieceClass {
 
   public canPromote(): boolean {
     if (this.promotion) return false
-    if (this.player === this.board.player1 && this.currentPosition[0] < 3)
+    if (this.player.isFirstMove && this.currentPosition[0] < 3) {
       if (window.confirm('成りますか？')) return true
-    else if (this.player === this.board.player2 && this.currentPosition[0] > 5)
+    } else if (!this.player.isFirstMove && this.currentPosition[0] > 5) {
       if (window.confirm('成りますか？')) return true
+    }
     return false
   }
 
