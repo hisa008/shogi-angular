@@ -1,6 +1,5 @@
 import {Player} from '../player.model'
 import {Board} from '../board.model'
-import { threadId } from 'worker_threads';
 // import { threadId } from 'worker_threads';
 // import { TestBed } from '@angular/core/testing';
 
@@ -57,7 +56,7 @@ export class BasePieceClass {
     const targetPiece = this.board.positions[nextY][nextX] as BasePieceClass
     targetPiece.player = this.opponentPlayer()
     targetPiece.active = false
-    targetPiece.currentPosition = this.player.isFirstMove ? this.inActive() : this.inActivePlayer2()
+    targetPiece.currentPosition = this.player.isFirstMove ? this.inActivePlayer1() : this.inActivePlayer2()
     if (targetPiece.promotion) targetPiece.promotion = false
     if (this.player.isFirstMove) this.board.inActivePlayer1.push(this)
     else　this.board.inActivePlayer2.push(this)
@@ -77,7 +76,7 @@ export class BasePieceClass {
       return 0
   }
 
-  public inActive(): number[] {
+  public inActivePlayer1(): number[] {
     let positionX = this.board.inActivePlayer1.length % 7
     let inActivePosition1 = [6.1, 10 + .3 * positionX]
     if (this.board.inActivePlayer1.length > 13) inActivePosition1[0] += 1.8 //inActive1 piece > 12piece
@@ -109,16 +108,32 @@ export class BasePieceClass {
     return false
   }
 
+  public inActiveMove(): void{
+    this.active = true
+    if (this.player.isFirstMove) {
+      this.board.inActivePlayer1.length -= 1
+    }
+  }
+
+  public afterMoving(): void {
+    if (this.canPromote() && this.active) this.promotion = true
+    this.board.selectedPiece = null
+    this.board.game.isPlayer1Turn = !this.board.game.isPlayer1Turn
+    // if (!this.active) this.active = true
+    if (!this.active) this.inActiveMove()
+    if (this.board.game.isPlayer1Turn) this.board.game.whichTurn = 'Player1'
+    else this.board.game.whichTurn = 'Player2' 
+  }
+
   public moveTo(position: number[]): void {
     if (this.currentPosition && this.active) { // set null to my current location (元々いた場所をnullにする)
       const currentY = this.currentPosition[0]
       const currentX = this.currentPosition[1]
       this.board.positions[currentY][currentX] = null
     } 
-
     const nextY = position[0]
     const nextX = position[1]
-    // remove the enemy piece if killed (相手のコマを奪った場合、そのコマをinActiveにする)
+
     if (this.board.positions[nextY][nextX]) this.enemyPieceKilled(nextY, nextX)
 
     this.board.positions[nextY][nextX] = this   // set new location of the board and the piece (新しく配置したpositionにpieceの情報を与える)
@@ -130,12 +145,7 @@ export class BasePieceClass {
       this.board.game.winner = winner.isFirstMove ? 'Player1' : 'Player2'
     }
 
-    if (this.canPromote()) this.promotion = true
-    this.board.selectedPiece = null
-    this.board.game.isPlayer1Turn = !this.board.game.isPlayer1Turn
-    if (!this.active) this.active = true
-    if (this.board.game.isPlayer1Turn) this.board.game.whichTurn = 'Player1'
-    else this.board.game.whichTurn = 'Player2'
+    this.afterMoving()
   }
 
   public movableTo(currentPosition: number[]): void {   // can I move to the new position? (指定のpositionに移動できるか？)
@@ -148,15 +158,41 @@ export class BasePieceClass {
   }
 
   public inActiveMovableTo(): void {
+    let exitOwnPawnColumn: number[] = []
+    if (this.constructor.name === "Hu")
+      exitOwnPawnColumn = this.checkPawnColumn() // 自身の歩が存在する場合、そのx座標を格納  
     let rowNumber = 0
     for (let row of this.board.positions) {
       let columnNumber = 0
       for (let column of row) {
-        if (column === null) this.canMoveAllPosition.push([rowNumber, columnNumber])
+        if (this.checkForbiddenArea(rowNumber) && column === null && !exitOwnPawnColumn.includes(columnNumber))
+          this.canMoveAllPosition.push([rowNumber, columnNumber])
         columnNumber++
       }
       rowNumber++
     }
+  }
+
+  public checkForbiddenArea(row: number) :boolean {
+    let forbiddenArea = this.player.isFirstMove ? 0 : 8
+    let exceptionArea: number | undefined = undefined
+    if (this.constructor.name === "Keima")
+      exceptionArea = this.player.isFirstMove ? 1 : 7
+    if (row === forbiddenArea) return false
+    if (row === exceptionArea) return false
+    return true
+  }
+
+  public checkPawnColumn(): number[]{  //自身の歩が存在する場合、そのx座標をownPawnColumnに格納
+    let ownPawnColumn: number[] = []
+    this.board.positions.forEach(row => {
+      row.forEach(column => {
+        if (column?.player.isFirstMove === this.player.isFirstMove && column.constructor.name === "Hu") {
+          ownPawnColumn.push(column.currentPosition[1])
+        }
+      })
+    })
+    return ownPawnColumn
   }
 
   public isOtherPiece(currentPosition: number[]): void {

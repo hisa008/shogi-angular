@@ -1,7 +1,7 @@
 <h3 class="turn-name">Turn : <span class="turn-player1" [class.turn-player2]="game.isPlayer1Turn">{{this.game.whichTurn}}</span></h3>
 <div id="shogi-board"> 
-  <div *ngFor="let row of game.board.positions" class="row">
-    <div *ngFor="let column of row" class="square" (click)="offSelect()"></div>
+  <div *ngFor="let row of game.board.positions" class="row" (click)="offSelect()">
+    <div *ngFor="let column of row" class="square"></div>
   </div>
   <ng-container *ngIf="game.board.selectedPiece !== null">
     <div *ngFor="let area of game.board.selectedPiece?.canMoveAllPosition; let i = index"
