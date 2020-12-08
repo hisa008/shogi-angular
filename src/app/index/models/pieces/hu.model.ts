@@ -8,21 +8,12 @@ export class Hu extends BasePieceClass {
       return '歩'
   }
 
-  public canPromoteSelect(currentY: number): void {
-    if (this.active && this.canPromote())
-      this.promotion = true
-  }
-
-  public canPromote(): boolean {
-    if (this.promotion) return false
-    if (this.player === this.board.player1 && this.currentPosition[0] === 0)
-      return true
-    else if (this.player === this.board.player1 && this.currentPosition[0] < 3)
-      if (window.confirm('成りますか？')) return true
-    if (this.player === this.board.player2 && this.currentPosition[0] === 8)
-      return true
-    else if (this.player === this.board.player2 && this.currentPosition[0] > 5)
-      if (window.confirm('成りますか？')) return true
+  public canPromoteTo(): boolean {
+    if (!this.active) return false
+    if (this.player.isFirstMove && this.currentPosition[0] === 0) this.promotion = true
+    else if (this.player === this.board.player1 && this.currentPosition[0] < 3) return true
+    if (this.player === this.board.player2 && this.currentPosition[0] === 8) this.promotion = true
+    else if (this.player === this.board.player2 && this.currentPosition[0] > 5) return true
     return false
   }
 

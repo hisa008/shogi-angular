@@ -1,3 +1,4 @@
+import { triggerAsyncId } from 'async_hooks'
 import {BasePieceClass} from './basePiece.model'
 
 export class Kyosya extends BasePieceClass {
@@ -8,21 +9,12 @@ export class Kyosya extends BasePieceClass {
       return '香'
   }
 
-  public canPromoteSelect(currentY: number): void {
-    if (this.active && this.canPromote())
-      this.promotion = true
-  }
-
-  public canPromote(): boolean {
-    if (this.promotion) return false
-    if (this.player === this.board.player1 && this.currentPosition[0] === 0)
-      return true
-    else if (this.player === this.board.player1 && this.currentPosition[0] < 3)
-      if (window.confirm('成りますか？')) return true
-    if (this.player === this.board.player2 && this.currentPosition[0] === 8)
-      return true
-    else if (this.player === this.board.player2 && this.currentPosition[0] > 5)
-      if (window.confirm('成りますか？')) return true
+  public canPromoteTo(): boolean {
+    if (!this.active) return false
+    if (this.player === this.board.player1 && this.currentPosition[0] === 0) this.promotion = true
+    else if (this.player === this.board.player1 && this.currentPosition[0] < 3) return true
+    if (this.player === this.board.player2 && this.currentPosition[0] === 8) this.promotion = true
+    else if (this.player === this.board.player2 && this.currentPosition[0] > 5) return true
     return false
   }
 
@@ -63,7 +55,7 @@ export class Kyosya extends BasePieceClass {
     this.canMoveAllPosition = []
     this.board.selectedPiece = this
     if (this.promotion === false) this.bigPieceMove(currentPosition, this.player.isFirstMove ? [[-1, 0]] : [[1, 0]])
-    else this.smallPieceMove(currentPosition)
+    else this.checkMovableArea(currentPosition)
     if(this.active === false) this.inActiveMovableTo()
   }
 

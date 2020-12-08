@@ -26,8 +26,7 @@ export class Kaku extends BasePieceClass {
   public movableTo(currentPosition: number[]): void {   // can I move to the new position? (指定のpositionに移動できるか？)
     this.canMoveAllPosition = []
     this.board.selectedPiece = this
-    if (this.moveDirection) this.bigPieceMove(currentPosition, this.moveDirection)
-    else this.smallPieceMove(currentPosition)
+    this.bigPieceMove(currentPosition, this.moveDirection)
     if(this.active === false) this.inActiveMovableTo()
   }
 

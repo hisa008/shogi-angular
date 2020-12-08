@@ -38,21 +38,12 @@ export class Keima extends BasePieceClass {
       return [[-2, 1], [-2, -1]]
   }
 
-  public canPromoteSelect(currentY: number): void {
-    if (this.active && this.canPromote())
-      this.promotion = true
-  }
-
-  public canPromote(): boolean {
-    if (this.promotion) return false
-    if (this.player === this.board.player1 && this.currentPosition[0] < 2)
-      return true
-    else if (this.player === this.board.player1 && this.currentPosition[0] === 2)
-      if (window.confirm('成りますか？')) return true
-    if (this.player === this.board.player2 && this.currentPosition[0] > 6)
-      return true
-    else if (this.player === this.board.player2 && this.currentPosition[0] === 6)
-      if (window.confirm('成りますか？')) return true
+  public canPromoteTo(): boolean {
+    if (!this.active) return false
+    if (this.player.isFirstMove && this.currentPosition[0] < 2) this.promotion = true
+    else if (this.player.isFirstMove && this.currentPosition[0] === 2) return true
+    if (!this.player.isFirstMove && this.currentPosition[0] > 6) this.promotion = true
+    else if (!this.player.isFirstMove && this.currentPosition[0] === 6) return true
     return false
   }
 }
