@@ -1,4 +1,4 @@
-import { triggerAsyncId } from 'async_hooks'
+// import { triggerAsyncId } from 'async_hooks'
 import {BasePieceClass} from './basePiece.model'
 
 export class Kyosya extends BasePieceClass {
