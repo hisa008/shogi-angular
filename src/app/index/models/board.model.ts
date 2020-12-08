@@ -17,8 +17,10 @@ export class Board {
   public player2: Player | undefined
   public game: Game
   public selectedPiece: null | BasePieceClass
-  public inActivePlayer1: BasePieceClass[]
-  public inActivePlayer2: BasePieceClass[]
+  public inActivePieces1: BasePieceClass[]
+  public inActivePieces2: BasePieceClass[]
+  public inActivePosition1: number[]
+  public inActivePosition2: number[]
 
   constructor (game: Game) {
     this.game = game
@@ -36,8 +38,10 @@ export class Board {
     
     this.pieces = []
     this.selectedPiece = null
-    this.inActivePlayer1 = []
-    this.inActivePlayer2 = []
+    this.inActivePieces1 = []
+    this.inActivePieces2 = []
+    this.inActivePosition1 = [6.1, 10]
+    this.inActivePosition2 = [1.9, 10]
   }
 
   public initBoard () {

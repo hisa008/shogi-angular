@@ -1,6 +1,7 @@
 # 将棋ゲーム
 
 このアプリ上では実際の将棋を行うことができます。
+URL : https://practice-shogi-game.web.app/
 
 ## ルール
 
