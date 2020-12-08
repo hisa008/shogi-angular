@@ -20,3 +20,7 @@ URL : https://practice-shogi-game.web.app/
 * playerの切り替え
 * 成駒（*選択権はなし　強制的に成ります）
 * 持ち駒の使用
+
+## 備考
+
+* 対応デバイスはデスクトップのみです。
